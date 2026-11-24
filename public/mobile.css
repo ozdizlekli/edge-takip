@@ -2,6 +2,14 @@
 
 html { -webkit-text-size-adjust: 100%; }
 body { overflow-x: hidden; }
+
+/* Grid çocukları içeriğe göre şişip sayfayı yana taşırmasın */
+.app-main { grid-template-columns: minmax(0, 1fr); }
+.app-main > *,
+.workspace-section,
+.tab-panel,
+.panel-surface,
+.tablist-scroller { min-width: 0; max-width: 100%; }
 img, svg, canvas { max-width: 100%; height: auto; }
 
 /* iOS'ta input'a tıklayınca otomatik zoom yapmasın */
@@ -43,6 +51,11 @@ input, select, textarea { font-size: 16px; }
     gap: 8px !important;
     width: 100%;
   }
+  /* sütun yönünde 360px flex-basis dev boşluk yaratıyordu */
+  .brand-block { flex: 0 0 auto !important; }
+  .header-controls { align-items: stretch !important; }
+  .control-group { width: 100%; }
+  .control-group select, .control-group input { width: 100%; }
   .header-actions .btn { width: 100%; }
   .brand-badges { flex-wrap: wrap; }
 
@@ -60,6 +73,7 @@ input, select, textarea { font-size: 16px; }
     -webkit-overflow-scrolling: touch;
     white-space: nowrap;
   }
+  .tablist-scroller { display: flex; max-width: 100%; }
   .tablist-scroller [role="tab"] { flex: 0 0 auto; }
 
   /* Geniş içerikler kendi içinde kaysın */
