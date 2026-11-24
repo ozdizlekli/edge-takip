@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TÜBİTAK 2209-A İş Bölümü ve İlerleme Paneli | Kesintili Edge</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a href="#main-content" class="skip-link visually-hidden">Ana içeriğe geç</a>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-block">
+        <div class="brand-badges">
+          <span class="pill pill-accent">TÜBİTAK 2209-A</span>
+          <span class="pill pill-muted">İKÇÜ · Danışman: Doğan Aydın</span>
+          <span id="persistence-badge" class="pill pill-ok" role="status" aria-live="polite">Kayıt hazır</span>
+        </div>
+        <h1>Kesintili Dağıtık Edge — Ekip İş Bölümü ve İlerleme Paneli</h1>
+      </div>
+
+      <div class="header-controls">
+        <div class="control-group">
+          <label for="active-member-select">Aktif Kullanıcı (Ben)</label>
+          <select id="active-member-select" name="activeMember">
+            <option value="all">Genel Görünüm (Tümü)</option>
+            <option value="sila">Zehra Sıla Özdizlekli</option>
+            <option value="hilal">Hilal Ay</option>
+            <option value="fatmanur">Fatmanur Bulut</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="project-start-date">Proje Başlangıcı</label>
+          <input type="date" id="project-start-date" name="projectStartDate" value="2026-11-24">
+        </div>
+
+        <div class="header-actions">
+          <button type="button" id="btn-new-task" class="btn btn-primary">+ Yeni Görev Ata</button>
+          <button type="button" id="btn-sync-modal" class="btn btn-secondary">Ortak Link / Bulut</button>
+          <button type="button" id="btn-export-pdf" class="btn btn-secondary">PDF İndir (Görev Raporu)</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content" tabindex="-1" class="app-main">
+    <!-- Üst Özet & Ekip Durumu -->
+    <section aria-labelledby="overview-heading" class="overview-section">
+      <div class="section-head">
+        <h2 id="overview-heading">Proje İlerlemesi, Kalan Süre ve Ekip Konumu</h2>
+        <div id="countdown-summary" class="countdown-banner"></div>
+      </div>
+
+      <div class="kpi-grid">
+        <article class="kpi-card">
+          <h3>Ağırlıklı İlerleme (TÜBİTAK İP)</h3>
+          <div class="kpi-value-row">
+            <strong id="kpi-weighted-pct" class="kpi-number">%0</strong>
+            <span id="kpi-task-count" class="kpi-sub">0 / 22 görev</span>
+          </div>
+          <label for="overall-progress" class="visually-hidden">Genel proje ilerlemesi</label>
+          <progress id="overall-progress" value="0" max="100"></progress>
+          <p id="kpi-ip-breakdown" class="kpi-note"></p>
+        </article>
+
+        <article class="kpi-card">
+          <h3>7 Aylık Takvim & Kalan Süre</h3>
+          <div class="kpi-value-row">
+            <strong id="kpi-days-left" class="kpi-number">210 gün</strong>
+            <span id="kpi-current-month" class="kpi-sub">Ay 1 / 7</span>
+          </div>
+          <label for="timeline-progress" class="visually-hidden">Takvim ilerlemesi</label>
+          <progress id="timeline-progress" value="0" max="100"></progress>
+          <p id="kpi-deadline-date" class="kpi-note"></p>
+        </article>
+
+        <article class="kpi-card">
+          <h3>Hipotez Hazırlık Durumu</h3>
+          <ul id="hypothesis-status-list" class="hypothesis-mini-list"></ul>
+        </article>
+
+        <article class="kpi-card">
+          <h3>Bekleyen Devir / Görev Talepleri</h3>
+          <div class="kpi-value-row">
+            <strong id="kpi-pending-requests" class="kpi-number">0</strong>
+            <span class="kpi-sub">bekleyen talep</span>
+          </div>
+          <p id="kpi-requests-note" class="kpi-note">Başkasına atama veya görev isteme talepleri burada toplanır.</p>
+          <button type="button" id="btn-jump-requests" class="btn btn-ghost btn-sm">Talepler Merkezine Git</button>
+        </article>
+      </div>
+
+      <div id="team-cards-grid" class="team-grid" aria-label="Ekip üyelerinin mevcut durumu"></div>
+    </section>
+
+    <!-- Ana Sekmeler -->
+    <section class="workspace-section" aria-label="Çalışma Alanı Görünümleri">
+      <div class="tablist-scroller" role="tablist" aria-label="Proje takip görünümleri">
+        <button type="button" role="tab" id="tab-board" aria-selected="true" tabindex="0">Görev Panosu</button>
+        <button type="button" role="tab" id="tab-deps" aria-selected="false" tabindex="-1">Bağımlılık &amp; Paralel Akış</button>
+        <button type="button" role="tab" id="tab-timeline" aria-selected="false" tabindex="-1">7 Aylık Zaman Çizelgesi</button>
+        <button type="button" role="tab" id="tab-requests" aria-selected="false" tabindex="-1">Talepler &amp; Hareket Kaydı <span id="tab-req-count" class="tab-badge" hidden>0</span></button>
+        <button type="button" role="tab" id="tab-docs" aria-selected="false" tabindex="-1">1. vs 2. Belge &amp; İş Bölümü Planı</button>
+      </div>
+
+      <!-- Sekme 1: Görev Panosu -->
+      <div id="panel-board" role="tabpanel" aria-labelledby="tab-board" tabindex="0" class="tab-panel">
+        <div class="panel-surface">
+          <search class="filter-bar">
+            <form id="board-filter-form" class="filter-form">
+              <div class="filter-field">
+                <label for="filter-search">Görev Ara</label>
+                <input type="search" id="filter-search" name="q" placeholder="Örn: fencing, CRDT, PQC, WfBench...">
+              </div>
+              <div class="filter-field">
+                <label for="filter-member">Sorumlu Kişi</label>
+                <select id="filter-member" name="member">
+                  <option value="all">Herkes</option>
+                  <option value="sila">Zehra Sıla</option>
+                  <option value="hilal">Hilal</option>
+                  <option value="fatmanur">Fatmanur</option>
+                </select>
+              </div>
+              <div class="filter-field">
+                <label for="filter-ip">İş Paketi (İP)</label>
+                <select id="filter-ip" name="ip">
+                  <option value="all">Tüm İP’ler (1–7)</option>
+                  <option value="1">İP 1 · Formülasyon (%10)</option>
+                  <option value="2">İP 2 · Quorum/Fencing (%15)</option>
+                  <option value="3">İP 3 · δ-CRDT/Sync (%20)</option>
+                  <option value="4">İP 4 · Atama/netem (%15)</option>
+                  <option value="5">İP 5 · PQC/PKI/CRL (%15)</option>
+                  <option value="6">İP 6 · İstatistik/Donanım (%20)</option>
+                  <option value="7">İP 7 · HDC/Ölçek (%5)</option>
+                </select>
+              </div>
+              <div class="filter-field">
+                <label for="filter-exec">Yürütme Tipi</label>
+                <select id="filter-exec" name="exec">
+                  <option value="all">Tümü</option>
+                  <option value="sirali">Sıralı (Kritik Yol)</option>
+                  <option value="paralel">Paralel Yürütülebilir</option>
+                </select>
+              </div>
+              <button type="button" id="btn-clear-filters" class="btn btn-ghost">Sıfırla</button>
+            </form>
+          </search>
+
+          <div id="kanban-board" class="kanban-grid"></div>
+        </div>
+      </div>
+
+      <!-- Sekme 2: Bağımlılık & Paralel Akış -->
+      <div id="panel-deps" role="tabpanel" aria-labelledby="tab-deps" hidden class="tab-panel">
+        <div class="panel-surface">
+          <div class="deps-toolbar">
+            <div>
+              <h2>Görev Bağımlılık Ağı (DAG) ve Paralel/Sıralı Akış</h2>
+              <p class="muted-text">Bir göreve tıklayarak hangi önkoşullara bağlı olduğunu (turuncu), hangi görevleri açtığını (yeşil) ve aynı anda yürütülebilecek paralel görevleri görün.</p>
+            </div>
+            <div class="legend-row">
+              <span class="legend-item"><span class="dot dot-sila"></span>Sıla</span>
+              <span class="legend-item"><span class="dot dot-hilal"></span>Hilal</span>
+              <span class="legend-item"><span class="dot dot-fatmanur"></span>Fatmanur</span>
+              <span class="legend-item"><span class="badge-mini badge-parallel">Paralel</span></span>
+              <span class="legend-item"><span class="badge-mini badge-serial">Sıralı</span></span>
+            </div>
+          </div>
+
+          <div class="deps-layout">
+            <div id="deps-graph-container" class="deps-graph-scroll"></div>
+            <aside id="deps-inspector" class="deps-inspector" aria-live="polite">
+              <h3>Görev Bağımlılık İnceleyici</h3>
+              <p class="muted-text">Soldaki grafikten bir görev kutusuna tıklayın.</p>
+            </aside>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sekme 3: 7 Aylık Zaman Çizelgesi -->
+      <div id="panel-timeline" role="tabpanel" aria-labelledby="tab-timeline" hidden class="tab-panel">
+        <div class="panel-surface">
+          <div class="section-head">
+            <div>
+              <h2>7 Aylık İş-Zaman Çizelgesi ve İş Paketi (İP 1–7) İlerlemesi</h2>
+              <p class="muted-text">Her İP’nin TÜBİTAK başarı ağırlığı, risk B-planı ve alt görevlerinin gün bazlı zaman aralıkları.</p>
+            </div>
+          </div>
+          <div id="ip-progress-cards" class="ip-progress-grid"></div>
+          <div id="gantt-container" class="gantt-scroll"></div>
+        </div>
+      </div>
+
+      <!-- Sekme 4: Talepler & Hareket Kaydı -->
+      <div id="panel-requests" role="tabpanel" aria-labelledby="tab-requests" hidden class="tab-panel">
+        <div class="panel-surface requests-layout">
+          <div>
+            <h2>Atama &amp; Görev İsteme Talepleri</h2>
+            <p class="muted-text">Bir ekip üyesinin başka birine atamak istediği veya başkasından devralmak istediği görev taleplerini onaylayın ya da reddedin.</p>
+            <div id="requests-list" class="requests-list"></div>
+          </div>
+          <div>
+            <div class="section-head">
+              <h2>Proje Hareket Geçmişi (Kalıcı Kayıt)</h2>
+              <button type="button" id="btn-reset-default" class="btn btn-danger-ghost btn-sm">Varsayılan Plana Dön</button>
+            </div>
+            <ul id="activity-log-list" class="activity-log"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sekme 5: Belge Karşılaştırması & İş Bölümü Mantığı -->
+      <div id="panel-docs" role="tabpanel" aria-labelledby="tab-docs" hidden class="tab-panel">
+        <div class="panel-surface docs-layout">
+          <div>
+            <h2>1. ve 2. Belge İncelemesi (Danışman Düzenlemesi)</h2>
+            <p class="muted-text">Hocamız Doğan Aydın’ın 2. taslaktan 1. TÜBİTAK 2209-A belgesine geçerken yaptığı düzenlemeler ve bu paneldeki mantıklı iş bölümü gerekçesi.</p>
+            <div id="doc-comparison-grid" class="doc-diff-grid"></div>
+          </div>
+
+          <div class="docs-side-grid">
+            <article class="info-box">
+              <h3>3 Kişilik İş Yükü Denge Özeti</h3>
+              <div id="workload-balance-table"></div>
+            </article>
+
+            <article class="info-box">
+              <h3>TÜBİTAK 2209-A Bütçe Planı (11.700 / 12.000 TL)</h3>
+              <div id="budget-table-container"></div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal 1: Görev Detay, Durum Taşıma, Devir ve İsteme -->
+  <dialog id="task-detail-dialog" closedby="any" aria-labelledby="detail-dialog-title">
+    <div class="dialog-shell">
+      <header class="dialog-header">
+        <div>
+          <span id="detail-task-code" class="pill pill-muted"></span>
+          <h1 id="detail-dialog-title">Görev Detayı</h1>
+        </div>
+        <form method="dialog">
+          <button type="submit" class="btn btn-ghost" aria-label="Pencereyi kapat">✕</button>
+        </form>
+      </header>
+
+      <div id="detail-dialog-body" class="dialog-body"></div>
+    </div>
+  </dialog>
+
+  <!-- Modal 2: Yeni Görev Ekle / Ata -->
+  <dialog id="new-task-dialog" closedby="any" aria-labelledby="new-task-title">
+    <div class="dialog-shell">
+      <header class="dialog-header">
+        <h1 id="new-task-title">Yeni Görev Oluştur ve Ata</h1>
+        <form method="dialog">
+          <button type="submit" class="btn btn-ghost" aria-label="Pencereyi kapat">✕</button>
+        </form>
+      </header>
+
+      <form id="new-task-form" class="dialog-form">
+        <div class="form-row">
+          <div class="field">
+            <label for="nt-title">Görev Başlığı <span aria-hidden="true">*</span></label>
+            <input type="text" id="nt-title" name="title" required minlength="4" maxlength="140" placeholder="Örn: ESP32-C6 seri port enerji ölçüm scripti">
+          </div>
+        </div>
+
+        <div class="form-row two-col">
+          <div class="field">
+            <label for="nt-ip">İş Paketi (İP) <span aria-hidden="true">*</span></label>
+            <select id="nt-ip" name="ipNo" required>
+              <option value="1">İP 1 · Formülasyon (%10)</option>
+              <option value="2">İP 2 · Quorum/Fencing (%15)</option>
+              <option value="3">İP 3 · δ-CRDT/Sync (%20)</option>
+              <option value="4">İP 4 · Atama/netem (%15)</option>
+              <option value="5">İP 5 · PQC/PKI/CRL (%15)</option>
+              <option value="6">İP 6 · İstatistik/Donanım (%20)</option>
+              <option value="7">İP 7 · HDC/Ölçek (%5)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="nt-owner">Sorumlu Kişi <span aria-hidden="true">*</span></label>
+            <select id="nt-owner" name="ownerId" required>
+              <option value="sila">Zehra Sıla Özdizlekli</option>
+              <option value="hilal">Hilal Ay</option>
+              <option value="fatmanur">Fatmanur Bulut</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row two-col">
+          <div class="field">
+            <label for="nt-exec">Yürütme Tipi</label>
+            <select id="nt-exec" name="executionType">
+              <option value="paralel">Paralel Yürütülebilir</option>
+              <option value="sirali">Sıralı (Kritik Yol)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="nt-hyp">İlgili Hipotez / Alan</label>
+            <select id="nt-hyp" name="hypothesis">
+              <option value="Genel">Genel</option>
+              <option value="Mimari">Mimari</option>
+              <option value="H1">H1 · Görev Atama</option>
+              <option value="H2">H2 · Veri Aktarım Sırası</option>
+              <option value="H3">H3 · Güvenli Yeniden Bağlantı</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row three-col">
+          <div class="field">
+            <label for="nt-start">Başlangıç Günü (0–209)</label>
+            <input type="number" id="nt-start" name="startDay" min="0" max="209" value="0" required>
+          </div>
+          <div class="field">
+            <label for="nt-dur">Süre (Gün)</label>
+            <input type="number" id="nt-dur" name="durationDays" min="1" max="120" value="14" required>
+          </div>
+          <div class="field">
+            <label for="nt-hours">Tahmini Efor (Saat)</label>
+            <input type="number" id="nt-hours" name="effortHours" min="1" max="100" value="12" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="nt-deps">Bağlı Olduğu Önkoşul Görevler</label>
+          <select id="nt-deps" name="dependsOn" multiple size="4"></select>
+          <span class="field-hint">Birden fazla seçim için Cmd/Ctrl tuşunu basılı tutun.</span>
+        </div>
+
+        <div class="field">
+          <label for="nt-desc">Açıklama ve Başarı Ölçütü</label>
+          <textarea id="nt-desc" name="description" rows="3" placeholder="Bu görevin kapsamı, beklenen çıktısı ve teslim kriteri..."></textarea>
+        </div>
+
+        <div class="dialog-footer">
+          <button type="button" id="btn-cancel-new-task" class="btn btn-ghost">İptal</button>
+          <button type="submit" class="btn btn-primary">Görevi Oluştur</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Modal 3: Canlı Ortak Senkronizasyon (GitHub Pages + Firebase) -->
+  <dialog id="sync-dialog" closedby="any" aria-labelledby="sync-dialog-title">
+    <div class="dialog-shell">
+      <header class="dialog-header">
+        <div>
+          <span class="pill pill-accent">3 Kişilik Canlı Senkronizasyon</span>
+          <h1 id="sync-dialog-title">Ortak Link &amp; Bulut Bağlantısı</h1>
+        </div>
+        <form method="dialog">
+          <button type="submit" class="btn btn-ghost" aria-label="Pencereyi kapat">✕</button>
+        </form>
+      </header>
+
+      <div class="dialog-body">
+        <p class="muted-text">
+          GitHub Pages’te yayınladığınızda Sıla, Hilal ve Fatmanur’un yaptığı her değişikliğin anında herkeste görünmesi için ücretsiz bir Firebase Realtime Database URL’si bağlayabilirsiniz.
+        </p>
+
+        <section class="detail-section">
+          <h2>1 Dakikalık Kurulum</h2>
+          <ol style="margin: 0; padding-inline-start: 1.2rem; font-size: 0.85rem; display: grid; gap: 0.35rem;">
+            <li><strong>console.firebase.google.com</strong> adresinden yeni proje açın → <strong>Build → Realtime Database → Create Database</strong> (Test Mode).</li>
+            <li>Oluşan <code>https://...-default-rtdb....firebasedatabase.app</code> adresini aşağıya yapıştırıp <strong>Bağla</strong> deyin.</li>
+            <li>Çıkan <strong>Paylaşılabilir Ortak Linki</strong> Hilal ve Fatmanur’a atın; linke tıkladıkları anda otomatik bağlanırlar.</li>
+          </ol>
+        </section>
+
+        <form id="sync-config-form" class="form-row">
+          <div class="field">
+            <label for="sync-url-input">Firebase Realtime Database URL</label>
+            <input type="text" id="sync-url-input" name="cloudUrl" placeholder="https://tubitak-edge-default-rtdb.europe-west1.firebasedatabase.app">
+          </div>
+          <div class="status-btn-group">
+            <button type="submit" class="btn btn-primary btn-sm">Buluta Bağla</button>
+            <button type="button" id="btn-disconnect-cloud" class="btn btn-ghost btn-sm">Bulut Bağlantısını Kes</button>
+          </div>
+        </form>
+
+        <section class="detail-section">
+          <h2>Arkadaşlarına Gönderilecek Link</h2>
+          <div class="field">
+            <label for="share-link-output">Hazır Paylaşım Linki</label>
+            <input type="text" id="share-link-output" readonly>
+          </div>
+          <div class="status-btn-group">
+            <button type="button" id="btn-copy-share-link" class="btn btn-secondary btn-sm">Linki Kopyala</button>
+            <span id="sync-status-msg" class="muted-text" role="status" aria-live="polite"></span>
+          </div>
+        </section>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="live-announcer" class="visually-hidden" role="status" aria-live="polite"></div>
+
+  <script defer src="js/sync-config.js"></script>
+  <script defer src="js/seed-data.js"></script>
+  <script defer src="js/dates.js"></script>
+  <script defer src="js/store.js"></script>
+  <script defer src="js/pdf-export.js"></script>
+  <script defer src="js/app.js"></script>
+</body>
+</html>

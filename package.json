@@ -1,0 +1,10 @@
+{
+  "name": "tubitak-2209a-edge-takip",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Kesintili Dağıtık Edge Sistemleri TÜBİTAK 2209-A Ekip Görev ve İlerleme Takip Paneli",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
