@@ -1,0 +1,97 @@
+/* mobile.css — telefon uyumu (styles.css'ten SONRA yüklenir) */
+
+html { -webkit-text-size-adjust: 100%; }
+body { overflow-x: hidden; }
+img, svg, canvas { max-width: 100%; height: auto; }
+
+/* iOS'ta input'a tıklayınca otomatik zoom yapmasın */
+input, select, textarea { font-size: 16px; }
+
+/* Tablet ve altı */
+@media (max-width: 900px) {
+  .kpi-grid,
+  .team-grid,
+  .ip-progress-grid,
+  .kanban-grid,
+  .docs-layout,
+  .docs-side-grid,
+  .doc-diff-grid,
+  .requests-layout,
+  .deps-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .deps-layout,
+  .requests-layout,
+  .docs-layout {
+    display: grid;
+  }
+}
+
+/* Telefon */
+@media (max-width: 640px) {
+  .app-main { padding: 12px !important; }
+
+  /* Üst bar: alt alta dizilsin */
+  .app-header { position: static !important; }
+  .header-inner,
+  .header-controls,
+  .header-actions,
+  .brand-block {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    width: 100%;
+  }
+  .header-actions .btn { width: 100%; }
+  .brand-badges { flex-wrap: wrap; }
+
+  /* Filtreler */
+  .filter-form,
+  .filter-bar {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* Sekmeler yatay kaydırılsın */
+  .tablist-scroller {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+  .tablist-scroller [role="tab"] { flex: 0 0 auto; }
+
+  /* Geniş içerikler kendi içinde kaysın */
+  .gantt-scroll,
+  .deps-graph-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Form satırları tek sütun */
+  .form-row.two-col,
+  .form-row.three-col {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Pencereler (dialog) ekranı kaplasın */
+  .dialog-shell {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
+    height: 100dvh !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    overflow-y: auto;
+  }
+  dialog { max-width: 100vw; width: 100vw; margin: 0; }
+
+  /* Parmakla basması kolay butonlar */
+  .btn { min-height: 44px; }
+  .btn-sm { min-height: 38px; }
+  .dialog-footer { flex-direction: column-reverse; gap: 8px; }
+  .dialog-footer .btn { width: 100%; }
+
+  .status-btn-group { flex-wrap: wrap; }
+}
